@@ -7,9 +7,9 @@ import styles from '../styles/Home.module.css';
 
 export default function Home() {
   return (
-    <div>
+    <main>
       <button onClick={() => toast.success('toasted...')}>Toast me</button>
       <Loader show />
-    </div>
+    </main>
   );
 }
