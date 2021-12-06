@@ -3,8 +3,10 @@ import { useCallback, useContext, useEffect, useState } from 'react';
 import { UserContext } from '../lib/context';
 import { auth, firestore, googleAuthProvider } from '../lib/firebase';
 
-function EnterPage() {
+function EnterPage(props) {
   const { user, username } = useContext(UserContext);
+  console.log('user:', user);
+  console.log('username:', username);
 
   // user states
   // 1. signed out <SignInButton />
@@ -24,6 +26,8 @@ function EnterPage() {
     </main>
   );
 }
+
+export default EnterPage;
 
 function SignInButton() {
   const signInWithGoogle = async () => {
@@ -52,9 +56,24 @@ function UserNameForm() {
 
   const { user, username } = useContext(UserContext);
 
-  useEffect(() => {
-    checkUsername(formValue);
-  }, [formValue]);
+  const onSubmit = async (e) => {
+    e.preventDefault();
+
+    // create refs for both documents
+    const userDoc = firestore.doc(`users/${user.uid}`);
+    const usernameDoc = firestore.doc(`usernames/${formValue}`);
+
+    // commit both docs together as a batch write(or transaction)
+    const batch = firestore.batch();
+    batch.set(userDoc, {
+      username: formValue,
+      photoURL: user.photoURL,
+      displayName: user.displayName,
+    });
+    batch.set(usernameDoc, { uid: user.uid });
+
+    await batch.commit();
+  };
 
   const onChange = (e) => {
     const val = e.target.value.toLowerCase();
@@ -72,6 +91,10 @@ function UserNameForm() {
     }
   };
 
+  useEffect(() => {
+    checkUsername(formValue);
+  }, [formValue]);
+
   const checkUsername = useCallback(
     debounce(async (username) => {
       if (username.length >= 3) {
@@ -84,43 +107,6 @@ function UserNameForm() {
     }, 500),
     []
   );
-
-  const onSubmit = async (e) => {
-    e.preventDefault();
-
-    // // create refs for both documents
-    // const userDoc = firestore.doc(`users/${user.uid}`);
-    // const usernameDoc = firestore.doc(`usernames/${formValue}`);
-
-    // // commit both docs together as a batch write(or transaction)
-    // const batch = firestore.batch();
-    // batch.set(userDoc, {
-    //   username: formValue,
-    //   photoURL: user.photoURL,
-    //   displayName: user.displayName,
-    // });
-    // batch.set(usernameDoc, { uid: user.uid });
-
-    // await batch.commit();
-    try {
-      // create refs for both documents
-      const userDoc = firestore.doc(`users/${user.uid}`);
-      const usernameDoc = firestore.doc(`usernames/${formValue}`);
-
-      // commit both docs together as a batch write(or transaction)
-      const batch = firestore.batch();
-      batch.set(userDoc, {
-        username: formValue,
-        photoURL: user.photoURL,
-        displayName: user.displayName,
-      });
-      batch.set(usernameDoc, { uid: user.uid });
-
-      await batch.commit();
-    } catch (error) {
-      console.error(error);
-    }
-  };
 
   return (
     !username && (
@@ -141,7 +127,7 @@ function UserNameForm() {
             isValid={isValid}
           />
 
-          <button className='btn-green' type='submit'>
+          <button className='btn-green' type='submit' disabled={!isValid}>
             Choose Username
           </button>
 
@@ -158,8 +144,6 @@ function UserNameForm() {
     )
   );
 }
-
-export default EnterPage;
 
 function UsernameMessage({ username, isValid, loading }) {
   if (loading) {

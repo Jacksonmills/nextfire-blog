@@ -1,9 +1,42 @@
-function UserProfilePage() {
+import PostFeed from '../../components/PostFeed';
+import UserProfile from '../../components/UserProfile';
+import { getUserWithUsername, postToJSON } from '../../lib/firebase';
+
+function UserProfilePage({ user, posts }) {
   return (
-    <div>
-      <h1>user page</h1>
-    </div>
+    <main>
+      <UserProfile user={user} />
+      <PostFeed posts={posts} />
+    </main>
   );
+}
+
+export async function getServerSideProps({ query }) {
+  const { username } = query;
+
+  const userDoc = await getUserWithUsername(username);
+
+  // JSON serializable data
+  let user = null;
+  let posts = null;
+
+  if (userDoc) {
+    user = userDoc.data();
+    const postsQuery = userDoc.ref
+      .collection('posts')
+      .where('published', '==', true)
+      .orderBy('createdAt', 'desc')
+      .limit(5);
+
+    posts = (await postsQuery.get()).docs.map(postToJSON);
+  }
+
+  return {
+    props: {
+      user,
+      posts,
+    },
+  };
 }
 
 export default UserProfilePage;

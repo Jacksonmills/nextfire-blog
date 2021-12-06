@@ -6,13 +6,14 @@ function Navbar() {
   const { user, username } = useContext(UserContext);
 
   return (
-    <div className='navbar'>
+    <nav className='navbar'>
       <ul>
         <li>
           <Link href='/' passHref>
             <button className='btn-logo'>MEME</button>
           </Link>
         </li>
+
         {/* user is signed in and has username */}
         {username && (
           <>
@@ -28,6 +29,7 @@ function Navbar() {
             </li>
           </>
         )}
+
         {/* user is not signed in OR has no username */}
         {!username && (
           <li>
@@ -37,7 +39,7 @@ function Navbar() {
           </li>
         )}
       </ul>
-    </div>
+    </nav>
   );
 }
 
