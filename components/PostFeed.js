@@ -1,19 +1,14 @@
 import Link from 'next/link';
 
 function PostFeed({ posts, admin }) {
-  // return posts
-  //   ? posts.map((post) => <PostItem post={post} admin={admin} />)
-  //   : null;
-
-  return (
-    posts &&
-    posts.map((post, idx) => <PostItem key={idx} post={post} admin={admin} />)
-  );
+  return posts
+    ? posts.map((post, idx) => <PostItem key={idx} post={post} admin={admin} />)
+    : null;
 }
 
 export default PostFeed;
 
-function PostItem({ post }) {
+function PostItem({ post, admin }) {
   return (
     <div className='card'>
       <Link href={`/${post.username}`}>
