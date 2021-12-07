@@ -29,6 +29,7 @@ export async function getServerSideProps({ query }) {
       .limit(5);
 
     posts = (await postsQuery.get()).docs.map(postToJSON);
+    console.log('posts', posts);
   }
 
   return {
