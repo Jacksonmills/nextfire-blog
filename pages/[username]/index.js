@@ -2,15 +2,6 @@ import PostFeed from '../../components/PostFeed';
 import UserProfile from '../../components/UserProfile';
 import { getUserWithUsername, postToJSON } from '../../lib/firebase';
 
-function UserProfilePage({ user, posts }) {
-  return (
-    <main>
-      <UserProfile user={user} />
-      <PostFeed posts={posts} />
-    </main>
-  );
-}
-
 export async function getServerSideProps({ query }) {
   const { username } = query;
 
@@ -38,6 +29,16 @@ export async function getServerSideProps({ query }) {
       posts,
     },
   };
+}
+
+function UserProfilePage({ user, posts }) {
+  console.log(posts);
+  return (
+    <main>
+      <UserProfile user={user} />
+      <PostFeed posts={posts} />
+    </main>
+  );
 }
 
 export default UserProfilePage;

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Spacer from './Spacer';
 
 function PostFeed({ posts, admin }) {
   return posts
@@ -9,6 +10,9 @@ function PostFeed({ posts, admin }) {
 export default PostFeed;
 
 function PostItem({ post, admin }) {
+  const wordCount = post?.content.trim().split(/\s+/g).length;
+  const minutesToRead = (wordCount / 100 + 1).toFixed(0);
+
   return (
     <div className='card'>
       <Link href={`/${post.username}`}>
@@ -23,7 +27,10 @@ function PostItem({ post, admin }) {
       </Link>
 
       <footer>
-        <span>word count/read time here</span>
+        <span>
+          {wordCount} words | {minutesToRead}m read
+        </span>
+        <Spacer axis='horizontal' size={20} />
         <span>💖 {post.heartCount || 0} Hearts</span>
       </footer>
 
