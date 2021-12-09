@@ -5,8 +5,6 @@ import { auth, firestore, googleAuthProvider } from '../lib/firebase';
 
 function EnterPage(props) {
   const { user, username } = useContext(UserContext);
-  console.log('user:', user);
-  console.log('username:', username);
 
   // user states
   // 1. signed out <SignInButton />

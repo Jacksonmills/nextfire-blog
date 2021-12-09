@@ -4,8 +4,13 @@ import { getUserWithUsername, postToJSON } from '../../lib/firebase';
 
 export async function getServerSideProps({ query }) {
   const { username } = query;
-
   const userDoc = await getUserWithUsername(username);
+
+  if (!userDoc) {
+    return {
+      notFound: true,
+    };
+  }
 
   // JSON serializable data
   let user = null;
@@ -20,7 +25,6 @@ export async function getServerSideProps({ query }) {
       .limit(5);
 
     posts = (await postsQuery.get()).docs.map(postToJSON);
-    console.log('posts', posts);
   }
 
   return {
@@ -32,7 +36,6 @@ export async function getServerSideProps({ query }) {
 }
 
 function UserProfilePage({ user, posts }) {
-  console.log(posts);
   return (
     <main>
       <UserProfile user={user} />

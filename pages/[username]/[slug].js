@@ -1,134 +1,63 @@
-// import PostContent from '../../components/PostContent';
-// import { firestore, getUserWithUsername, postToJSON } from '../../lib/firebase';
-// import { useDocumentData } from 'react-firebase-hooks/firestore';
-
-// export async function getStaticProps({ params }) {
-//   const { username, slug } = params;
-//   const userDoc = await getUserWithUsername(username);
-
-//   let post;
-//   let path;
-
-//   if (userDoc) {
-//     const postRef = userDoc.ref.collection('posts').doc(slug);
-//     post = postToJSON(await postRef.get());
-
-//     path = postRef.path;
-//   }
-
-//   return {
-//     props: {
-//       post,
-//       path,
-//     },
-//     revalidate: 5000,
-//   };
-// }
-
-// export async function getStaticPaths() {
-//   const snapshot = await firestore.collectionGroup('posts').get();
-
-//   const paths = snapshot.docs.map((doc) => {
-//     const { slug, username } = doc.data();
-//     return {
-//       params: { username, slug },
-//     };
-//   });
-
-//   return {
-//     paths,
-//     fallback: 'blocking',
-//   };
-// }
-
-// function UserPostPage(props) {
-//   const postRef = firestore.doc(props.path);
-//   const [realtimePost] = useDocumentData(postRef);
-
-//   const post = realtimePost || props.post;
-//   return (
-//     <main>
-//       <PostContent post={post} />
-//     </main>
-//   );
-// }
-
-// export default UserPostPage;
-
 import PostContent from '../../components/PostContent';
 import { firestore, getUserWithUsername, postToJSON } from '../../lib/firebase';
-
-import Link from 'next/link';
 import { useDocumentData } from 'react-firebase-hooks/firestore';
-import { useContext } from 'react';
-import { UserContext } from '../../lib/context';
 
-export async function getStaticProps({ params }) {
-  const { username, slug } = params;
-  const userDoc = await getUserWithUsername(username);
+function UserPostPage(props) {
+  const postRef = firestore.doc(props.path);
+  console.log(postRef.doc);
+  const [realtimePost] = useDocumentData(postRef);
+  const post = props.post;
 
-  let post;
-  let path;
-
-  if (userDoc) {
-    const postRef = userDoc.ref.collection('posts').doc(slug);
-    post = postToJSON(await postRef.get());
-
-    path = postRef.path;
-  }
-
-  return {
-    props: { post, path },
-    revalidate: 100,
-  };
+  return (
+    <main>
+      <PostContent post={post} />
+    </main>
+  );
 }
 
 export async function getStaticPaths() {
-  // Improve my using Admin SDK to select empty docs
   const snapshot = await firestore.collectionGroup('posts').get();
 
   const paths = snapshot.docs.map((doc) => {
-    const { slug, username } = doc.data();
+    const { username, slug } = doc.data();
     return {
       params: { username, slug },
     };
   });
 
   return {
-    // must be in this format:
-    // paths: [
-    //   { params: { username, slug }}
-    // ],
     paths,
     fallback: 'blocking',
   };
 }
 
-export default function Post(props) {
-  const postRef = firestore.doc(props.path);
-  const [realtimePost] = useDocumentData(postRef);
+export async function getStaticProps({ params }) {
+  const { username, slug } = params;
+  const userDoc = await getUserWithUsername(username);
 
-  const post = realtimePost || props.post;
+  let user;
+  let post;
+  let path;
 
-  const { user: currentUser } = useContext(UserContext);
+  if (userDoc) {
+    user = userDoc.data();
+    const postsQuery = userDoc.ref
+      .collection('posts')
+      .where('slug', '==', slug)
+      .limit(1);
+    const posts = (await postsQuery.get()).docs.map(postToJSON);
+    post = posts[0];
 
-  return (
-    <main>
-      <section>
-        <PostContent post={post} />
-      </section>
+    const postRef = userDoc.ref.collection('posts').doc(slug);
+    path = postRef.path;
+  } else {
+    console.log('No Document Found...');
+  }
 
-      <aside className='card'>
-        <p>
-          <strong>{post.heartCount || 0} 🤍</strong>
-        </p>
-
-        {currentUser?.uid === post.uid && (
-          <Link href={`/admin/${post.slug}`}>
-            <button className='btn-blue'>Edit Post</button>
-          </Link>
-        )}
-      </aside>
-    </main>
-  );
+  return {
+    props: { user, post, path },
+    revalidate: 5000,
+  };
 }
+
+export default UserPostPage;

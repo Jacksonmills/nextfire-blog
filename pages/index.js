@@ -3,7 +3,7 @@ import Loader from '../components/Loader';
 import PostFeed from '../components/PostFeed';
 import { firestore, fromMillis, postToJSON } from '../lib/firebase';
 
-const LIMIT = 1;
+const LIMIT = 10;
 
 export async function getServerSideProps() {
   const postsQuery = firestore
@@ -26,12 +26,9 @@ export default function Home(props) {
   const [loading, setLoading] = useState(false);
   const [postsEnd, setPostsEnd] = useState(false);
 
-  console.log('posts', posts);
-
   const getMorePosts = async () => {
     setLoading(true);
     const last = posts[posts.length - 1];
-    console.log('last', last);
     const cursor =
       typeof last.createdAt === 'number'
         ? fromMillis(last.createdAt)
